@@ -3,16 +3,29 @@
  * @Author: Akshendra Pratap Singh
  * @Date: 2017-06-19 00:27:44
  * @Last Modified by: Akshendra Pratap Singh
- * @Last Modified time: 2017-06-19 01:15:49
+ * @Last Modified time: 2017-06-20 00:42:13
  */
 
-const joi = require('joi');
-const validate = require('./validate');
+const { r, rp } = require('require-easy');
+
+const joi = r('joi');
+const validate = rp(__dirname, '../lib/validate');
 
 /**
  * @module {object} strings
  */
 module.exports = {
+  /**
+   * Split a multi-line string into array of lines
+   *
+   * @param {string} string - multiline string
+   *
+   * @returns {string}
+   */
+  lines(string, delimiter = '\n') {
+    return string.trim().split(delimiter);
+  },
+
   /**
    * Change a key that is in camel case into ENV variable format
    * Eg,

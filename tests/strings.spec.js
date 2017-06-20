@@ -3,11 +3,34 @@
  * @Author: Akshendra Pratap Singh
  * @Date: 2017-06-19 00:30:29
  * @Last Modified by: Akshendra Pratap Singh
- * @Last Modified time: 2017-06-19 01:22:16
+ * @Last Modified time: 2017-06-20 01:00:35
  */
 
+const fs = require('fs');
+const util = require('util');
+const path = require('path');
 const expect = require('chai').expect;
 const strings = require('../src/strings');
+
+describe('lines', () => {
+  it('should split a string into lines', () => {
+    const string = `
+1. Line one
+2. Line two
+3. Line tree
+    `;
+    const lines = strings.lines(string);
+    expect(lines).to.have.length(3);
+  });
+
+  it('should split a string from file into lines', async () => {
+    const data = await util.promisify(fs.readFile)(
+      path.join(__dirname, 'data/lines'),
+    );
+    const lines = strings.lines(data.toString());
+    expect(lines).to.have.length(3);
+  });
+});
 
 describe('transformCamelCase', () => {
   it('should transform "myAwesomeKey" into "MY_AWESOME_KEY"', () => {
