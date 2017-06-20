@@ -3,7 +3,7 @@
  * @Author: Akshendra Pratap Singh
  * @Date: 2017-06-19 02:11:30
  * @Last Modified by: Akshendra Pratap Singh
- * @Last Modified time: 2017-06-20 04:08:09
+ * @Last Modified time: 2017-06-21 01:09:04
  */
 
 const { r, rp } = require('require-easy');
@@ -150,7 +150,7 @@ describe('nodeStack', () => {
 });
 
 describe('createTree', () => {
-  it('should create a tree', () => {
+  it('should create a tree and evaluate a simple tree', () => {
     const string = `db:{}
   host:"
   port:+
@@ -160,6 +160,51 @@ describe('createTree', () => {
     process.env.DB_PORT = '1234';
 
     const tree = parser.createTree(string);
-    console.log(tree.value);
+    expect(tree.value).to.deep.equal({
+      db: {
+        host: '127.0.0.1',
+        port: 1234,
+      },
+    });
+  });
+
+  it('should create and evaluate a complex tree', () => {
+    const string = `
+db:{}
+  host:"
+  port:+
+redis:{}
+  server:{}
+    host:"
+    port:+
+  password:"
+secret:"
+id:+
+    `;
+
+    process.env.DB_HOST = '127.0.0.1';
+    process.env.DB_PORT = '27017';
+    process.env.REDIS_SERVER_HOST = '127.0.0.1';
+    process.env.REDIS_SERVER_PORT = '6379';
+    process.env.REDIS_PASSWORD = 'password';
+    process.env.SECRET = 'secret';
+    process.env.ID = '1';
+
+    const tree = parser.createTree(string);
+    expect(tree.value).to.deep.equal({
+      db: {
+        host: '127.0.0.1',
+        port: 27017,
+      },
+      redis: {
+        server: {
+          host: '127.0.0.1',
+          port: 6379,
+        },
+        password: 'password',
+      },
+      secret: 'secret',
+      id: 1,
+    });
   });
 });

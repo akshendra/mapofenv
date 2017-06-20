@@ -3,7 +3,7 @@
  * @Author: Akshendra Pratap Singh
  * @Last Modified by: Akshendra Pratap Singh
  * @Last Modified time: 2017-06-19 02:09:10h
- * @Last Modified time: 2017-06-20 04:20:35
+ * @Last Modified time: 2017-06-21 01:11:49
  */
 
 const { r, rp } = require('require-easy');
@@ -57,6 +57,18 @@ function nodeStack(string) {
   return stack;
 }
 
+function readAndAdd(tree) {
+  if (tree.children.length === 0) {
+    tree.value = readEnv(tree.type, tree.env); // eslint-disable-line
+  }
+  // console.log(key, tree.env, tree.value);
+  if (tree.parent && tree.parent.type === Object) {
+    Object.assign(tree.parent.value, {
+      [tree.key]: tree.value,
+    });
+  }
+}
+
 function readEnv(Type, env) {
   if (Type === Object) {
     return {};
@@ -73,6 +85,8 @@ function analyseNode(tree, stack) {
   }
 
   if (stack.length <= 0) {
+    readAndAdd(tree);
+    analyseNode(tree.parent, stack);
     return;
   }
   const node = stack.pop();
@@ -83,18 +97,8 @@ function analyseNode(tree, stack) {
     : strings.transformKey(key);
 
   if (indent <= tree.indent) {
-    if (tree.children.length === 0) {
-      tree.value = readEnv(tree.type, tree.env); // eslint-disable-line
-    }
-    // console.log(key, tree.env, tree.value);
-    if (tree.parent && tree.parent.type === Object) {
-      Object.assign(tree.parent.value, {
-        [tree.key]: tree.value,
-      });
-    }
-
+    readAndAdd(tree);
     stack.push(node);
-    console.log('back', tree.value);
     analyseNode(tree.parent, stack);
     return;
   }
@@ -107,15 +111,6 @@ function analyseNode(tree, stack) {
     indent,
   });
 
-  if (stack.length === 0) {
-    child.value = readEnv(child.type, child.env); // eslint-disable-line
-    if (child.parent && child.parent.type === Object) {
-      Object.assign(child.parent.value, {
-        [child.key]: child.value,
-      });
-    }
-  }
-  console.log(tree.value);
   analyseNode(child, stack);
 }
 
