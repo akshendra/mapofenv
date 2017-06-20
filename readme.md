@@ -30,3 +30,24 @@ And produce an object as
   id: 10,
 }
 ```
+
+The structure of the file being
+
+```
+<key>:<type>(num)
+```
+
+- `key` being the key in the mapped object and also determines the env variable used
+- `type` defines the type of value this key would hold. Using shorthands, eg
+  - `{}` object
+  - `[<type>]` array of object
+  - `+` number
+  - `"` string
+  - Other types can also be added
+
+#### Todo
+
+- [x] Parse nested objects
+- [ ] Parse arrays
+- [ ] Support other types
+- [ ] Test coverage
