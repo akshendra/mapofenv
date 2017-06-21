@@ -13,6 +13,7 @@ id:+
 ```
 
 The module will look for the following environment variables
+
 - `DB_HOST` # '127.0.0.1'
 - `DB_PORT` # 27017
 - `SECRET` # 'youcantseeme'
@@ -50,4 +51,6 @@ The structure of the file being
 - [x] Parse nested objects
 - [ ] Parse arrays
 - [ ] Support other types
+- [ ] Logging
+- [ ] Error Handling
 - [ ] Test coverage

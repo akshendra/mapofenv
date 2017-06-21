@@ -31,6 +31,7 @@
     "mocha": "^3.4.2"
   },
   "dependencies": {
+    "debug": "^2.6.8",
     "joi": "^10.6.0",
     "require-easy": "0.0.3"
   }

@@ -3,7 +3,7 @@
  * @Author: Akshendra Pratap Singh
  * @Date: 2017-06-19 00:27:44
  * @Last Modified by: Akshendra Pratap Singh
- * @Last Modified time: 2017-06-20 00:42:13
+ * @Last Modified time: 2017-06-21 04:06:55
  */
 
 const { r, rp } = require('require-easy');
@@ -78,6 +78,9 @@ module.exports = {
    * @returns string
    */
   transformKey(string, opts = {}) {
+    if (typeof string !== 'string') {
+      return string;
+    }
     const { key, env } = validate(
       opts,
       joi.object().keys({
