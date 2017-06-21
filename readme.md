@@ -49,7 +49,7 @@ The structure of the file being
 #### Todo
 
 - [x] Parse nested objects
-- [ ] Parse arrays
+- [x] Parse arrays
 - [ ] Support other types
 - [ ] Logging
 - [ ] Error Handling
