@@ -3,10 +3,12 @@
  * @Author: Akshendra Pratap Singh
  * @Last Modified by: Akshendra Pratap Singh
  * @Last Modified time: 2017-06-19 02:09:10h
- * @Last Modified time: 2017-06-21 17:08:03
+ * @Last Modified time: 2017-06-22 06:07:25
  */
 
-const log = require('debug')('me:parser');
+const log = require('cimico')('mape', {
+  baseDir: __dirname,
+}); // eslint-disable-line
 
 const Tree = require('../lib/tree.js');
 const strings = require('./strings.js');
@@ -19,12 +21,15 @@ const strings = require('./strings.js');
  * @returns {string}
  */
 function typeMap(ref) {
+  log.log(`Looking for ${ref}`);
   const map = {
     '+': Number,
     '"': String,
     '{}': Object,
   };
-  return map[ref];
+  const value = map[ref];
+  log.log(`Found ${value} for ${ref}`);
+  return value;
 }
 
 /**
@@ -58,26 +63,23 @@ function nodeStack(string) {
 }
 
 function readAndAdd(tree) {
-  log('--------------------------------------');
-  log('readAndAdd: START', tree.key, tree.env);
+  log.log(`Reading for ${tree.key}, ${tree.env}`);
   if (tree.children.length === 0) {
-    log('readAndAdd: for leafs', tree.key, tree.env);
+    log.log(`It is a leaf ${tree.key}, ${tree.env}`);
     tree.value = readEnv(tree.type, tree.env); // eslint-disable-line
   }
 
   if (tree.parent && tree.parent.type === Object) {
-    log('readAndAdd: parent Object', tree.key, tree.env);
+    log.log(`The parent is an Object ${tree.key}, ${tree.env}`);
     Object.assign(tree.parent.value, {
       [tree.key]: tree.value,
     });
   }
 
   if (tree.parent && tree.parent.type === Array) {
-    log('readAndAdd: parent Array', tree.key, tree.env);
+    log.log(`The parent is an array ${tree.key}, ${tree.env}`);
     tree.parent.value[tree.key] = tree.value; // eslint-disable-line
   }
-  log('readAndAdd: END');
-  log('--------------------------------------');
 }
 
 function readEnv(Type, env) {
@@ -149,26 +151,19 @@ function replicateStack(tree, indent) {
 }
 
 function analyseNode(tree, stack) {
-  log('-----------------------------------');
-  log(
-    'analyseNode:',
-    tree ? `${String(tree.type)} ${tree.key}` : '<null>',
-    stack.length,
-  );
-
   if (tree === null) {
-    log('analyseNode: tree finsihed');
+    log.log(`Tree exhaused, and stack has ${stack.length}`);
     return;
   }
 
+  log.log(`For ${tree.key}, and stack has ${stack.length}`);
+
   if (tree.type === Array) {
-    log('analyseNode: array', tree.key);
+    log.log(`Node is array ${tree.key}`);
     const index = tree.children.length;
     if (tree.children.length < tree.itemLength) {
-      log(
-        'analyseNode: array: Not enough children yet',
-        tree.key,
-        tree.children.length,
+      log.log(
+        `Array node has not enough children yet, only has ${tree.children.length}`,
       );
       const child = tree.addChildren({
         type: tree.itemType,
@@ -177,18 +172,17 @@ function analyseNode(tree, stack) {
         value: tree.itemType === Array ? [] : {},
         indent: tree.indent + 1,
       });
-      log('analyseNode: array: added an index child', tree.key, child.key);
+      log.log(`Add an index node ${child.key}`);
       if (tree.children.length >= 2) {
-        log(
-          'analyseNode: array: add the nodes in stack again',
-          tree.key,
-          tree.children[0].key,
-        );
         const replicated = replicateStack(
           tree.children[0],
           tree.children[0].indent,
         );
-        log('analyseNode: replicated:', replicated);
+        log.log(
+          `Add children nodes again for replication, ${tree.key}`,
+          replicated,
+        );
+        log.log('analyseNode: replicated:', replicated);
         replicated.forEach(r => stack.push(r));
       }
       analyseNode(child, stack);
@@ -200,7 +194,7 @@ function analyseNode(tree, stack) {
   }
 
   if (stack.length <= 0) {
-    log('analyseNode: stack empty');
+    log.log('Stack has become empty');
     readAndAdd(tree);
     analyseNode(tree.parent, stack);
     return;
