@@ -3,12 +3,10 @@
  * @Author: Akshendra Pratap Singh
  * @Last Modified by: Akshendra Pratap Singh
  * @Last Modified time: 2017-06-19 02:09:10h
- * @Last Modified time: 2017-06-22 06:07:25
+ * @Last Modified time: 2017-06-22 22:45:27
  */
 
-const log = require('cimico')('mape', {
-  baseDir: __dirname,
-}); // eslint-disable-line
+const log = require('cimico')('mape', {}); // eslint-disable-line
 
 const Tree = require('../lib/tree.js');
 const strings = require('./strings.js');
@@ -21,14 +19,14 @@ const strings = require('./strings.js');
  * @returns {string}
  */
 function typeMap(ref) {
-  log.log(`Looking for ${ref}`);
+  log.f.l('Looking for %dbu(symbol)', ref);
   const map = {
     '+': Number,
     '"': String,
     '{}': Object,
   };
   const value = map[ref];
-  log.log(`Found ${value} for ${ref}`);
+  log.f.s(`Found that %dbu(${ref})`, value.name);
   return value;
 }
 
@@ -63,21 +61,21 @@ function nodeStack(string) {
 }
 
 function readAndAdd(tree) {
-  log.log(`Reading for ${tree.key}, ${tree.env}`);
+  log.f.l('Reading for %dbu(key) and %dbu(env)', tree.key, tree.env);
   if (tree.children.length === 0) {
-    log.log(`It is a leaf ${tree.key}, ${tree.env}`);
+    log.f.l('We are at a leave %dbu(key)', tree.key);
     tree.value = readEnv(tree.type, tree.env); // eslint-disable-line
   }
 
   if (tree.parent && tree.parent.type === Object) {
-    log.log(`The parent is an Object ${tree.key}, ${tree.env}`);
+    log.f.l('The parent is an object %dbu(key)', tree.key);
     Object.assign(tree.parent.value, {
       [tree.key]: tree.value,
     });
   }
 
   if (tree.parent && tree.parent.type === Array) {
-    log.log(`The parent is an array ${tree.key}, ${tree.env}`);
+    log.f.l('The parent is an array %dbu(key)', tree.key);
     tree.parent.value[tree.key] = tree.value; // eslint-disable-line
   }
 }
@@ -152,19 +150,17 @@ function replicateStack(tree, indent) {
 
 function analyseNode(tree, stack) {
   if (tree === null) {
-    log.log(`Tree exhaused, and stack has ${stack.length}`);
+    log.f.success('Tree exhaused, and %bdu(stack.length)', stack.length);
     return;
   }
 
-  log.log(`For ${tree.key}, and stack has ${stack.length}`);
+  log.f.log('Analyzing node %bdu(key) and %bdu(stack.length)', tree.key, stack.length);
 
   if (tree.type === Array) {
-    log.log(`Node is array ${tree.key}`);
+    log.f.log('Node is an array %bdu(key)', tree.key);
     const index = tree.children.length;
     if (tree.children.length < tree.itemLength) {
-      log.log(
-        `Array node has not enough children yet, only has ${tree.children.length}`,
-      );
+      log.f.log('Array not have enough children: %dbu', tree.children.length);
       const child = tree.addChildren({
         type: tree.itemType,
         key: index,
@@ -172,17 +168,13 @@ function analyseNode(tree, stack) {
         value: tree.itemType === Array ? [] : {},
         indent: tree.indent + 1,
       });
-      log.log(`Add an index node ${child.key}`);
+      log.f.log('Adding an index node with %bdu(key)', child.key);
       if (tree.children.length >= 2) {
         const replicated = replicateStack(
           tree.children[0],
           tree.children[0].indent,
         );
-        log.log(
-          `Add children nodes again for replication, ${tree.key}`,
-          replicated,
-        );
-        log.log('analyseNode: replicated:', replicated);
+        log.f.log('Adding back %(replcated) nodes', replicated);
         replicated.forEach(r => stack.push(r));
       }
       analyseNode(child, stack);
@@ -194,18 +186,23 @@ function analyseNode(tree, stack) {
   }
 
   if (stack.length <= 0) {
-    log.log('Stack has become empty');
+    log.f.s('Stack has become empty and we are at %bdu(key)', tree.key);
     readAndAdd(tree);
     analyseNode(tree.parent, stack);
     return;
   }
 
   const node = stack.pop();
-  const { key, indent, type, items, length } = node;
+  const {
+    key,
+    indent,
+    type,
+    items,
+    length,
+  } = node;
 
-  const env = tree.parent
-    ? [tree.env, strings.transformKey(key)].join('_')
-    : strings.transformKey(key);
+  const env = tree.parent ? [tree.env, strings.transformKey(key)].join('_') :
+    strings.transformKey(key);
 
   if (indent <= tree.indent) {
     readAndAdd(tree);
