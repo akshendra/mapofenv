@@ -3,13 +3,11 @@
  * @Author: Akshendra Pratap Singh
  * @Date: 2017-06-19 00:27:44
  * @Last Modified by: Akshendra Pratap Singh
- * @Last Modified time: 2017-06-21 04:06:55
+ * @Last Modified time: 2017-06-26 23:38:26
  */
 
-const { r, rp } = require('require-easy');
-
-const joi = r('joi');
-const validate = rp(__dirname, '../lib/validate');
+const joi = require('joi');
+const validate = require('../lib/validate');
 
 /**
  * @module {object} strings
@@ -88,26 +86,26 @@ module.exports = {
           .object()
           .keys({
             case: joi.string().valid(['snake', 'camel']).default('snake'),
-            delimiter: joi.string().default('_'),
+            delimiter: joi.string().default('_')
           })
           .default({
             case: 'snake',
-            delimiter: '_',
+            delimiter: '_'
           }),
         env: joi
           .object()
           .keys({
-            delimiter: joi.string().default('_'),
+            delimiter: joi.string().default('_')
           })
           .default({
-            delimiter: '_',
-          }),
-      }),
+            delimiter: '_'
+          })
+      })
     );
 
     if (key.case === 'camel') {
       return this.transformCamelCase(string, env.delimiter);
     }
     return this.transformSnakeCase(string, key.delimiter, env.delimiter);
-  },
+  }
 };

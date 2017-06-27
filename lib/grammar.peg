@@ -1,0 +1,97 @@
+{
+  // the map to values
+  const is = require('is_js');
+  const path = require('path');
+  const cimico = require('cimico');
+
+  const strings = require(path.join(__dirname, '../src/strings'));
+  const utils = require(path.join(__dirname, 'utils.js'));
+
+  const log = cimico();
+
+  const result = {};
+
+  let current = {
+    env: null,
+    key: null,
+    parent: result,
+    indent: null,
+  }
+  function updateCurrent(curr = {}) {
+    log.p.log('Updating current state with', curr);
+    Object.assign(current, curr);
+  }
+
+  function refreshCurrent() {
+    log.p.log('Refreshing current state');
+    current = {};
+  }
+
+  function add() {
+    const { key, type } = current;
+    log.f.log('Adding key %u', key);
+    Object.assign(result, {
+      [key]: utils.readEnv(strings.transformKey(key), type),
+    });
+    refreshCurrent();
+  }
+}
+
+start
+  = keyVal* {
+    return result;
+  }
+
+
+keyVal
+  = linebreak indent key:key _ ':' _ type:type _ linebreak {
+    log.f.log('key=%b and value=%b', key, type.name);
+    updateCurrent({
+      key,
+      type,
+    });
+    add();
+    return result;
+  }
+
+linebreak
+  = space:[\n]* {
+    // console.log(space);
+    return result;
+  }
+
+type
+  = "String" {
+    return {
+      name: 'String',
+      validation(value) {
+        return is.string(value);
+      },
+      coersion(value) {
+        return String(value);
+      },
+    }
+  }
+
+indent
+  = indents:[ ]* {
+    const il = indents.length;
+    log.f.log('Found indentation %b', il);
+    updateCurrent({
+      indentation: il,
+    });
+    return il;
+  }
+
+key
+  = first:[_a-zA-Z]others:[_a-zA-Z]+ {
+    const r = first + others.join('');
+    // console.log(r);
+    return r;
+  }
+
+// optional whitespace
+_  = [ \t]*
+
+// mandatory whitespace
+__ = [ \t]+

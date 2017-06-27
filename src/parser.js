@@ -3,10 +3,10 @@
  * @Author: Akshendra Pratap Singh
  * @Last Modified by: Akshendra Pratap Singh
  * @Last Modified time: 2017-06-19 02:09:10h
- * @Last Modified time: 2017-06-22 22:45:27
+ * @Last Modified time: 2017-06-28 00:43:29
  */
 
-const log = require('cimico')('mape', {}); // eslint-disable-line
+const log = require("cimico")("mape", {}); // eslint-disable-line
 
 const Tree = require('../lib/tree.js');
 const strings = require('./strings.js');
@@ -23,7 +23,7 @@ function typeMap(ref) {
   const map = {
     '+': Number,
     '"': String,
-    '{}': Object,
+    '{}': Object
   };
   const value = map[ref];
   log.f.s(`Found that %dbu(${ref})`, value.name);
@@ -46,7 +46,7 @@ function lineData(line) {
     key: match[2],
     type: match[4] ? Array : typeMap(match[3]),
     items: match[4] ? typeMap(match[5]) : null,
-    length: match[9] ? Number(match[9]) : null,
+    length: match[9] ? Number(match[9]) : null
   };
 }
 
@@ -70,7 +70,7 @@ function readAndAdd(tree) {
   if (tree.parent && tree.parent.type === Object) {
     log.f.l('The parent is an object %dbu(key)', tree.key);
     Object.assign(tree.parent.value, {
-      [tree.key]: tree.value,
+      [tree.key]: tree.value
     });
   }
 
@@ -80,16 +80,6 @@ function readAndAdd(tree) {
   }
 }
 
-function readEnv(Type, env) {
-  if (Type === Object) {
-    return {};
-  } else if (Type === Array) {
-    return [];
-  }
-  const value = process.env[env];
-  return Type(value);
-}
-
 function _replicateStack(tree, stack, indent) {
   if (tree.type === Array) {
     stack.push({
@@ -97,7 +87,7 @@ function _replicateStack(tree, stack, indent) {
       key: tree.key,
       type: tree.type,
       items: tree.children[0].type,
-      length: tree.children.length,
+      length: tree.children.length
     });
     _replicateStack(tree.children[0], stack, indent + 1);
     return;
@@ -111,7 +101,7 @@ function _replicateStack(tree, stack, indent) {
         key: tree.key,
         type: tree.type,
         items: null,
-        length: null,
+        length: null
       });
       newIndent += 2;
     } else if (!tree.parent) {
@@ -132,7 +122,7 @@ function _replicateStack(tree, stack, indent) {
       key: tree.key,
       type: tree.type,
       items: null,
-      length: null,
+      length: null
     });
   }
 }
@@ -154,7 +144,11 @@ function analyseNode(tree, stack) {
     return;
   }
 
-  log.f.log('Analyzing node %bdu(key) and %bdu(stack.length)', tree.key, stack.length);
+  log.f.log(
+    'Analyzing node %bdu(key) and %bdu(stack.length)',
+    tree.key,
+    stack.length
+  );
 
   if (tree.type === Array) {
     log.f.log('Node is an array %bdu(key)', tree.key);
@@ -166,13 +160,13 @@ function analyseNode(tree, stack) {
         key: index,
         env: `${tree.env}[${index}]`,
         value: tree.itemType === Array ? [] : {},
-        indent: tree.indent + 1,
+        indent: tree.indent + 1
       });
       log.f.log('Adding an index node with %bdu(key)', child.key);
       if (tree.children.length >= 2) {
         const replicated = replicateStack(
           tree.children[0],
-          tree.children[0].indent,
+          tree.children[0].indent
         );
         log.f.log('Adding back %(replcated) nodes', replicated);
         replicated.forEach(r => stack.push(r));
@@ -193,16 +187,11 @@ function analyseNode(tree, stack) {
   }
 
   const node = stack.pop();
-  const {
-    key,
-    indent,
-    type,
-    items,
-    length,
-  } = node;
+  const { key, indent, type, items, length } = node;
 
-  const env = tree.parent ? [tree.env, strings.transformKey(key)].join('_') :
-    strings.transformKey(key);
+  const env = tree.parent
+    ? [tree.env, strings.transformKey(key)].join('_')
+    : strings.transformKey(key);
 
   if (indent <= tree.indent) {
     readAndAdd(tree);
@@ -218,7 +207,7 @@ function analyseNode(tree, stack) {
     value: type === Array ? [] : {},
     indent,
     itemType: items,
-    itemLength: length,
+    itemLength: length
   });
 
   analyseNode(child, stack);
@@ -231,7 +220,7 @@ function createTree(string) {
     key: '.',
     env: '_',
     value: {},
-    indent: -1,
+    indent: -1
   });
   analyseNode(tree, stack);
   return tree;
@@ -244,5 +233,5 @@ module.exports = {
   lineData,
   nodeStack,
   replicateStack,
-  createTree,
+  createTree
 };
