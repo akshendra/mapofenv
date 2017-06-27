@@ -4,82 +4,112 @@
   const path = require('path');
   const cimico = require('cimico');
 
+  const types = require(path.join(__dirname, 'types.js'));
   const strings = require(path.join(__dirname, '../src/strings'));
   const utils = require(path.join(__dirname, 'utils.js'));
+  const State = require(path.join(__dirname, 'state.js'));
 
-  const log = cimico();
+  const log = cimico({
+    pretty: false,
+  });
 
-  const result = {};
+  log.p.log('Starting...');
 
-  let current = {
-    env: null,
-    key: null,
-    parent: result,
-    indent: null,
+  const result = new State('', null, -1);
+  result.type = new types.Object();
+
+  let current = result;
+
+  function addKey(key) {
+    current.addKey(key);
   }
-  function updateCurrent(curr = {}) {
-    log.p.log('Updating current state with', curr);
-    Object.assign(current, curr);
+
+  function addType(type) {
+    current.type = type;
   }
 
-  function refreshCurrent() {
-    log.p.log('Refreshing current state');
-    current = {};
+  function addParent(parent) {
+    current.parent = parent;
+  }
+
+  function addIndent(indent) {
+    log.f.log('Adding indent=%b and current indent is=%b', indent, current.indent);
+    if (indent > current.indent) {
+      const newState = new State('', current, indent);
+      current = newState;
+    } else if (indent === current.indent) {
+      const newState = Object.create(current);
+      current = newState;
+    } else {
+      while(current.indent !== indent) {
+        current = current.parent;
+      }
+      const newState = Object.create(current);
+      current = newState;
+    }
   }
 
   function add() {
     const { key, type } = current;
+    log.debug(current);
+    console.log(current.addKey);
     log.f.log('Adding key %u', key);
-    Object.assign(result, {
-      [key]: utils.readEnv(strings.transformKey(key), type),
-    });
-    refreshCurrent();
+    current.read();
   }
 }
 
 start
   = keyVal* {
-    return result;
+    return result.type.value;
   }
 
 
 keyVal
   = linebreak indent key:key _ ':' _ type:type _ linebreak {
     log.f.log('key=%b and value=%b', key, type.name);
-    updateCurrent({
-      key,
-      type,
-    });
+    addKey(key);
+    addType(type);
     add();
-    return result;
+    return current;
   }
 
 linebreak
   = space:[\n]* {
-    // console.log(space);
+    log.log('Found line break');
     return result;
   }
 
 type
-  = "String" {
-    return {
-      name: 'String',
-      validation(value) {
-        return is.string(value);
-      },
-      coersion(value) {
-        return String(value);
-      },
-    }
+  = typeString / typeObject / typeInteger
+
+typeString
+  = 'String' {
+    return new types.String();
+  }
+
+typeObject
+  = 'Object' {
+    return new types.Object();
+  }
+
+typeInteger
+  = 'Integer' {
+    return new types.Integer();
+  }
+
+typeInside
+  = typeInteger / typeObject / typeString
+
+typeArray
+  = 'Array(' _ itemType:typeInside _ ')' _ '{'  {
+    return new types.Array(itemType);
   }
 
 indent
   = indents:[ ]* {
     const il = indents.length;
     log.f.log('Found indentation %b', il);
-    updateCurrent({
-      indentation: il,
-    });
+    addIndent(il);
     return il;
   }
 
@@ -89,6 +119,13 @@ key
     // console.log(r);
     return r;
   }
+
+length
+ = digits:[0-9]+ {
+   const value = parseInt(digits.join(''), 10);
+   log.f.log('Found length %b', value);
+   return value;
+ }
 
 // optional whitespace
 _  = [ \t]*
