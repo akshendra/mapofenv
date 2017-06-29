@@ -3,7 +3,7 @@
  * @Author: Akshendra Pratap Singh
  * @Date: 2017-06-27 23:29:25
  * @Last Modified by: Akshendra Pratap Singh
- * @Last Modified time: 2017-06-29 17:55:09
+ * @Last Modified time: 2017-06-29 19:48:04
  */
 
 const expect = require('chai').expect;
@@ -349,6 +349,62 @@ cube: Array(Array(Array(Integer){2}){2}){2}
 
     expect(result).to.deep.equal({
       cube: [[[0, 1], [2, 3]], [[4, 5], [6, 7]]],
+    });
+  });
+
+  it('should be able to parse objects inside array or array', () => {
+    const string = `
+triangles: Array(Array(Object){2}){2}
+  x: Integer
+  y: Integer
+  z: Integer
+`;
+
+    process.env['TRIANGLES[0][0]_X'] = 1;
+    process.env['TRIANGLES[0][0]_Y'] = 2;
+    process.env['TRIANGLES[0][0]_Z'] = 3;
+
+    process.env['TRIANGLES[0][1]_X'] = 4;
+    process.env['TRIANGLES[0][1]_Y'] = 5;
+    process.env['TRIANGLES[0][1]_Z'] = 6;
+
+    process.env['TRIANGLES[1][0]_X'] = 7;
+    process.env['TRIANGLES[1][0]_Y'] = 8;
+    process.env['TRIANGLES[1][0]_Z'] = 9;
+
+    process.env['TRIANGLES[1][1]_X'] = 10;
+    process.env['TRIANGLES[1][1]_Y'] = 11;
+    process.env['TRIANGLES[1][1]_Z'] = 12;
+
+    const result = parser.parse(string);
+
+    expect(result).to.deep.equal({
+      triangles: [
+        [
+          {
+            x: 1,
+            y: 2,
+            z: 3,
+          },
+          {
+            x: 4,
+            y: 5,
+            z: 6,
+          },
+        ],
+        [
+          {
+            x: 7,
+            y: 8,
+            z: 9,
+          },
+          {
+            x: 10,
+            y: 11,
+            z: 12,
+          },
+        ],
+      ],
     });
   });
 });
