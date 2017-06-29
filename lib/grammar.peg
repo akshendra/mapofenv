@@ -27,6 +27,29 @@
     return indentation.pop();
   }
 
+  function replenishArray(parent, children) {
+    if (parent.name !== 'Array') {
+      return;
+    }
+
+    const subType = parent.value[0];
+    if (subType.name === 'Object') {
+      if (children.length <= 0) {
+        throw new Error('Object should have children', location());
+      }
+      parent.value.forEach(st => {
+        children.forEach(({ key, type:child }) => {
+          st.addChild(key, _.cloneDeep(child));
+        });
+      });
+      return;
+    }
+
+    replenishArray(subType, children);
+
+    parent.value = parent.value.map(() => _.cloneDeep(subType));
+  }
+
 }
 
 start=
@@ -42,13 +65,32 @@ start=
   }
 
 keyVal=
-  keyBasic / keyObject / keyArrayBasic
-
+  keyBasic
 
 
 keyBasic=
-  linebreakOptional indent:indent key:identifier spaceOptional ':'  spaceOptional type:typeBasic spaceOptional linebreakRequired {
-    const ri = requiredIndentation();
+  linebreakOptional indent:indent key:identifier spaceOptional ':'  spaceOptional type:typeWithArray ! {
+    pushIndentation(indent + 2);
+  } spaceOptional linebreakRequired children:child* {
+    log.f.success('Reading type=%b', type.name);
+
+    if (type.name === 'Object') {
+      if (children.length <= 0) {
+        throw new Error('Object should have children', location());
+      }
+
+      children.forEach(({ key, type:child }) => {
+        type.addChild(key, _.cloneDeep(child));
+      });
+    }
+
+    if (type.name === 'Array') {
+      replenishArray(type, children);
+    }
+
+    log.debug(type);
+
+    popIndetation();
     return { key, type, indent };
   }
 
@@ -68,83 +110,9 @@ child=
   }
 
 
-
-keyObject=
-  linebreakOptional indent:indent key:identifier spaceOptional ':' spaceOptional 'Object' ! {
-    log.log('Object type found');
-    pushIndentation(indent + 2);
-  } spaceOptional linebreakRequired children:child+ {
-    log.f.debug('Object %b(key) children found %d', key, children.length);
-    const object = new types.ObjectType();
-    children.forEach(({ key, type }) => {
-      object.addChild(key, _.cloneDeep(type));
-    });
-    popIndetation();
-    return { key, type: object, indent };
-  }
-
-
-keyArrayBasic=
-  linebreakOptional indent:indent key:identifier spaceOptional ':' spaceOptional 'Array(' sec:typeWithArray ')' ! {
-    pushIndentation(indent + 2);
-  } spaceOptional '{' length:length '}' spaceOptional linebreakRequired children:child* {
-    log.log(`Array of ${sec.name} type found and key=${key}`);
-
-    const arr = new types.ArrayType();
-
-    if (sec.name === 'Object') {
-      if (children.length <= 0) {
-        throw new Error('Object should have children', location());
-      }
-
-      children.forEach(({ key, type }) => {
-        sec.addChild(key, _.cloneDeep(type));
-      });
-    }
-
-    if (sec.name === 'Array' && sec.value[0].name === 'Object') {
-      if (children.length <= 0) {
-        throw new Error('Object should have children', location());
-      }
-      sec.value.forEach(obj => {
-        children.forEach(({ key, type }) => {
-          obj.addChild(key, _.cloneDeep(type));
-        });
-      });
-    }
-
-    for (let i = 0; i < length; i += 1) {
-      const item = _.cloneDeep(sec);
-      arr.addChild(item);
-    }
-
-    popIndetation();
-
-    return { key, type: arr, indent };
-  }
-
-// keyArrayObject=
-//   linebreakOptional indent:indent key:identifier spaceOptional ':' spaceOptional 'Array(Object)' ! {
-//     log.log('Array of Object type found');
-//     pushIndentation(indent + 2);
-//     findChild = true;
-//   } spaceOptional '{' length:length '}' spaceOptional linebreakRequired children:child+ {
-//     log.f.debug('Array %b(key) children found %d', key, children.length);
-//     const array = new types.ArrayType();
-//     for (let i = 0; i < length; i++) {
-//       const object = new types.ObjectType();
-//       children.forEach(({ key, type }) => {
-//         object.addChild(key, _.cloneDeep(type));
-//       });
-//       array.addChild(object);
-//     }
-//     popIndetation();
-//     return { key, type: array, indent };
-//   }
-
 typeArray=
   'Array(' sec:typeWithArray ')' spaceOptional '{' length:length '}' {
-    log.log('Array type found found');
+    log.f.log('Found %bu', 'Array');
     const array = new types.ArrayType();
     for (let i = 0; i < length; i+= 1) {
       array.addChild(_.cloneDeep(sec));
@@ -154,7 +122,7 @@ typeArray=
 
 typeObject=
   'Object' {
-    log.log('Inside Object type found');
+    log.f.log('Found %bu', 'Object');
     return new types.ObjectType();
   }
 
@@ -165,13 +133,13 @@ anyExpectLineBreak=
 
 typeString=
 'String' {
-    log.log('String type found');
+    log.f.log('Found %bu', 'String');
     return new types.StringType();
   }
 
 typeInteger=
   'Integer' {
-    log.log('Integer type found');
+    log.f.log('Found %bu', 'Integer');
     return new types.IntegerType();
   }
 
