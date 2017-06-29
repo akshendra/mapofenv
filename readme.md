@@ -5,11 +5,11 @@
 Mapping configuration environment variables into a js object or array. Given a string like
 
 ```
-db:{}
-  host:"
-  port:+
-secret:"
-id:+
+db: Object
+  host: String
+  port: Integer
+secret: String
+id: Integer
 ```
 
 The module will look for the following environment variables
@@ -35,22 +35,27 @@ And produce an object as
 The structure of the file being
 
 ```
-<key>:<type>(num)
+<key>:<type>{num}
 ```
 
 - `key` being the key in the mapped object and also determines the env variable used
 - `type` defines the type of value this key would hold. Using shorthands, eg
-  - `{}` object
-  - `[<type>]` array of object
-  - `+` number
-  - `"` string
-  - Other types can also be added
+  - `Object` object
+  - `Array(<type>)` array of object
+  - `Integer` integer
+  - `String` string
+  - Other types to add
+- `{num}` is to specify the length of array
+
+> For more examples look in [tests](./tests/peg.spec.js)
 
 #### Todo
 
 - [x] Parse nested objects
 - [x] Parse arrays
+- [x] Parse nested arrays
+- [ ] Regex validation in config
 - [ ] Support other types
-- [ ] Logging
+- [x] Logging
 - [ ] Error Handling
 - [ ] Test coverage
