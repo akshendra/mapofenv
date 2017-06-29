@@ -44,6 +44,8 @@ start=
 keyVal=
   keyBasic / keyObject / keyArrayBasic / keyArrayObject
 
+
+
 keyBasic=
   linebreakOptional indent:indent key:identifier spaceOptional ':'  spaceOptional type:typeBasic spaceOptional linebreakRequired {
     const ri = requiredIndentation();
@@ -71,6 +73,8 @@ child=
     return found
   }
 
+
+
 keyObject=
   linebreakOptional indent:indent key:identifier spaceOptional ':' spaceOptional 'Object' ! {
     log.log('Object type found');
@@ -88,7 +92,7 @@ keyObject=
 
 
 keyArrayBasic=
-  linebreakOptional indent:indent key:identifier spaceOptional ':' spaceOptional 'Array(' sec:typeBasic ')' spaceOptional '{' length:length '}' spaceOptional linebreakRequired {
+  linebreakOptional indent:indent key:identifier spaceOptional ':' spaceOptional 'Array(' sec:typeWithArray ')' spaceOptional '{' length:length '}' spaceOptional linebreakRequired {
     log.log(`Array of ${sec.name} type found`);
     const arr = new types.ArrayType();
     for (let i = 0; i < length; i += 1) {
@@ -118,20 +122,33 @@ keyArrayObject=
     return { key, type: array, indent };
   }
 
-typeBasic=
-  typeString / typeInteger
+typeArray=
+  'Array(' sec:typeWithArray ')' spaceOptional '{' length:length '}' {
+    log.log('Array type found found');
+    const array = new types.ArrayType();
+    for (let i = 0; i < length; i+= 1) {
+      array.addChild(_.cloneDeep(sec));
+    }
+    return array;
+  }
 
-typeString
-  = 'String' {
+typeString=
+'String' {
     log.log('String type found');
     return new types.StringType();
   }
 
-typeInteger
-  = 'Integer' {
+typeInteger=
+  'Integer' {
     log.log('Integer type found');
     return new types.IntegerType();
   }
+
+typeBasic=
+  typeString / typeInteger
+
+typeWithArray=
+  typeBasic / typeArray
 
 linebreakOptional=
   space:[\n]* {

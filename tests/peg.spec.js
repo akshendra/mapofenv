@@ -3,7 +3,7 @@
  * @Author: Akshendra Pratap Singh
  * @Date: 2017-06-27 23:29:25
  * @Last Modified by: Akshendra Pratap Singh
- * @Last Modified time: 2017-06-29 17:31:46
+ * @Last Modified time: 2017-06-29 17:55:09
  */
 
 const expect = require('chai').expect;
@@ -310,6 +310,45 @@ db: Array(Object){2}
           ],
         },
       },
+    });
+  });
+
+  it('should be able to parse array of array', () => {
+    const string = `
+square: Array(Array(Integer){2}){2}
+`;
+
+    process.env['SQUARE[0][0]'] = 0;
+    process.env['SQUARE[0][1]'] = 1;
+    process.env['SQUARE[1][0]'] = 2;
+    process.env['SQUARE[1][1]'] = 3;
+
+    const result = parser.parse(string);
+
+    expect(result).to.deep.equal({
+      square: [[0, 1], [2, 3]],
+    });
+  });
+
+  it('should be able to parser array of array of array', () => {
+    const string = `
+cube: Array(Array(Array(Integer){2}){2}){2}
+`;
+
+    process.env['CUBE[0][0][0]'] = 0;
+    process.env['CUBE[0][0][1]'] = 1;
+    process.env['CUBE[0][1][0]'] = 2;
+    process.env['CUBE[0][1][1]'] = 3;
+
+    process.env['CUBE[1][0][0]'] = 4;
+    process.env['CUBE[1][0][1]'] = 5;
+    process.env['CUBE[1][1][0]'] = 6;
+    process.env['CUBE[1][1][1]'] = 7;
+
+    const result = parser.parse(string);
+
+    expect(result).to.deep.equal({
+      cube: [[[0, 1], [2, 3]], [[4, 5], [6, 7]]],
     });
   });
 });
