@@ -1,13 +1,11 @@
 {
   // the map to values
+  const _ = require('lodash');
   const is = require('is_js');
   const path = require('path');
   const cimico = require('cimico');
 
-  const types = require(path.join(__dirname, 'types.js'));
-  const strings = require(path.join(__dirname, '../src/strings'));
-  const utils = require(path.join(__dirname, 'utils.js'));
-  const State = require(path.join(__dirname, 'state.js'));
+  const types = require(path.join(__dirname, 'types'));
 
   const log = cimico({
     pretty: false,
@@ -15,120 +13,163 @@
 
   log.p.log('Starting...');
 
-  const result = new State('', null, -1);
-  result.type = new types.Object();
 
-  let current = result;
+  let findChild = false;
 
-  function addKey(key) {
-    current.addKey(key);
+  const indentation = [0];
+  function requiredIndentation() {
+    return indentation[indentation.length - 1];
+  }
+  function pushIndentation(indent) {
+    return indentation.push(indent);
+  }
+  function popIndetation() {
+    return indentation.pop();
   }
 
-  function addType(type) {
-    current.type = type;
-  }
-
-  function addParent(parent) {
-    current.parent = parent;
-  }
-
-  function addIndent(indent) {
-    log.f.log('Adding indent=%b and current indent is=%b', indent, current.indent);
-    if (indent > current.indent) {
-      const newState = new State('', current, indent);
-      current = newState;
-    } else if (indent === current.indent) {
-      const newState = Object.create(current);
-      current = newState;
-    } else {
-      while(current.indent !== indent) {
-        current = current.parent;
-      }
-      const newState = Object.create(current);
-      current = newState;
-    }
-  }
-
-  function add() {
-    const { key, type } = current;
-    log.debug(current);
-    console.log(current.addKey);
-    log.f.log('Adding key %u', key);
-    current.read();
-  }
 }
 
-start
-  = keyVal* {
-    return result.type.value;
+start=
+  keys:keyVal* {
+    const config = new types.ObjectType();
+    keys.forEach(({ key, type }) => {
+      config.addChild(key, type);
+    });
+    config.read();
+    const value = config.getValue();
+    log.debug(value);
+    return value;
+  }
+
+keyVal=
+  keyBasic / keyObject / keyArrayBasic / keyArrayObject
+
+keyBasic=
+  linebreakOptional indent:indent key:identifier spaceOptional ':'  spaceOptional type:typeBasic spaceOptional linebreakRequired {
+    const ri = requiredIndentation();
+    if (ri !== indent && findChild === true) {
+      throw new Error(`Looking for indentation of ${ri} at line: ${location().start.line} but found ${indent}`);
+    }
+    if (findChild === true) {
+      findChild = false;
+    }
+    return { key, type, indent };
+  }
+
+child=
+  found:keyVal & {
+    log.debug('Found a possible child', found);
+    const ri = requiredIndentation();
+    if (found.indent !== ri) {
+      log.f.log('Found non-child with indentation %b and required %b', found.indent, ri);
+      return false;
+    } else {
+      log.f.log('Found child with indentation %b and required %b', found.indent, ri);
+      return found;
+    }
+  } {
+    return found
+  }
+
+keyObject=
+  linebreakOptional indent:indent key:identifier spaceOptional ':' spaceOptional 'Object' ! {
+    log.log('Object type found');
+    pushIndentation(indent + 2);
+    findChild = true;
+  } spaceOptional linebreakRequired children:child+ {
+    log.f.debug('Object %b(key) children found %d', key, children.length);
+    const object = new types.ObjectType();
+    children.forEach(({ key, type }) => {
+      object.addChild(key, _.cloneDeep(type));
+    });
+    popIndetation();
+    return { key, type: object, indent };
   }
 
 
-keyVal
-  = linebreak indent key:key _ ':' _ type:type _ linebreak {
-    log.f.log('key=%b and value=%b', key, type.name);
-    addKey(key);
-    addType(type);
-    add();
-    return current;
+keyArrayBasic=
+  linebreakOptional indent:indent key:identifier spaceOptional ':' spaceOptional 'Array(' sec:typeBasic ')' spaceOptional '{' length:length '}' spaceOptional linebreakRequired {
+    log.log(`Array of ${sec.name} type found`);
+    const arr = new types.ArrayType();
+    for (let i = 0; i < length; i += 1) {
+      const item = _.cloneDeep(sec);
+      arr.addChild(item);
+    }
+
+    return { key, type: arr, indent };
   }
 
-linebreak
-  = space:[\n]* {
-    log.log('Found line break');
-    return result;
+keyArrayObject=
+  linebreakOptional indent:indent key:identifier spaceOptional ':' spaceOptional 'Array(Object)' ! {
+    log.log('Array of Object type found');
+    pushIndentation(indent + 2);
+    findChild = true;
+  } spaceOptional '{' length:length '}' spaceOptional linebreakRequired children:child+ {
+    log.f.debug('Array %b(key) children found %d', key, children.length);
+    const array = new types.ArrayType();
+    for (let i = 0; i < length; i++) {
+      const object = new types.ObjectType();
+      children.forEach(({ key, type }) => {
+        object.addChild(key, _.cloneDeep(type));
+      });
+      array.addChild(object);
+    }
+    popIndetation();
+    return { key, type: array, indent };
   }
 
-type
-  = typeString / typeObject / typeInteger
+typeBasic=
+  typeString / typeInteger
 
 typeString
   = 'String' {
-    return new types.String();
-  }
-
-typeObject
-  = 'Object' {
-    return new types.Object();
+    log.log('String type found');
+    return new types.StringType();
   }
 
 typeInteger
   = 'Integer' {
-    return new types.Integer();
+    log.log('Integer type found');
+    return new types.IntegerType();
   }
 
-typeInside
-  = typeInteger / typeObject / typeString
-
-typeArray
-  = 'Array(' _ itemType:typeInside _ ')' _ '{'  {
-    return new types.Array(itemType);
+linebreakOptional=
+  space:[\n]* {
+    log.debug('Optional line break found');
   }
 
-indent
-  = indents:[ ]* {
-    const il = indents.length;
-    log.f.log('Found indentation %b', il);
-    addIndent(il);
-    return il;
+linebreakRequired=
+  space:[\n]+ {
+    log.debug('Required line break found');
   }
 
-key
-  = first:[_a-zA-Z]others:[_a-zA-Z]+ {
-    const r = first + others.join('');
-    // console.log(r);
-    return r;
+identifier=
+  first:[_a-zA-z] rest:([_0-9a-zA-z]*) {
+    const id = first + rest.join('');
+    log.f.log('Found identifier=%b', id);
+    return id;
   }
 
-length
- = digits:[0-9]+ {
-   const value = parseInt(digits.join(''), 10);
-   log.f.log('Found length %b', value);
-   return value;
- }
+indent=
+  spaces:[ ]* {
+    const length = spaces.length;
+    log.f.log('Found %b spaces', length);
+    return length;
+  }
 
-// optional whitespace
-_  = [ \t]*
+length=
+  digits:[0-9]+ {
+    const length = parseInt(digits.join(''), 10);
+    log.f.log('Found length %b', length);
+    return length;
+  }
 
-// mandatory whitespace
-__ = [ \t]+
+spaceRequired=
+  [ \t]+ {
+    log.debug('Required space found');
+  }
+
+spaceOptional=
+  [ \t]* {
+    log.debug('Optional space found');
+  }

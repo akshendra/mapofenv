@@ -21,6 +21,7 @@
         "constructor-super": "warn",
         "valid-typeof": "warn",
         "no-underscore-dangle": 0,
-        "comma-dangle": 0
+        "comma-dangle": 0,
+        "import/no-dynamic-require": 0
     }
 }
