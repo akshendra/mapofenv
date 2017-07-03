@@ -78,8 +78,10 @@ keyVal=
 keyBasic=
   linebreakOptional indent:indent key:identifier spaceOptional ':'  spaceOptional type:typeWithArray ! {
     pushIndentation(indent + 2);
-  } spaceOptional linebreakRequired children:child* {
+  } spaceOptional regex:regex linebreakOptional children:child* {
     log.f.log('Reading type %bu at key %bu', type.name, key);
+
+    type.addRegExp(regex);
 
     if (type.name === 'Object') {
       if (children.length <= 0) {
@@ -152,6 +154,16 @@ typeBasic=
 typeWithArray=
   typeBasic / typeArray / typeObject
 
+regex=
+  regex:('/' [\^\*\.\+a-zA-Z0-9\?():|\[\]\-\{\}\\\\$]+ '/' / spaceOptional) {
+    if (regex) {
+      const exp = regex[1].join('');
+      log.f.debug('Regex found %bu', exp);
+      return new RegExp(exp);
+    }
+    return null;
+  }
+
 linebreakOptional=
   space:[\n]* {
     log.debug('Optional line break found');
@@ -190,6 +202,7 @@ spaceRequired=
   }
 
 spaceOptional=
-  [ \t]* {
-    log.debug('Optional space found');
+  spaces:[ \t]* {
+    const length = spaces.length;
+    log.f.debug('Found %bu spaces', length);
   }
