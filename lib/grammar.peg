@@ -7,36 +7,43 @@
 
   const types = require(path.join(__dirname, 'types'));
 
-  const log = cimico({
+  const log = cimico('cimico:grammar', {
     pretty: false,
   });
 
-  log.p.log('Starting...');
-
 
   let currentIndent = -1;
-
   const indentation = [-1];
+
   function requiredIndentation() {
-    return indentation[indentation.length - 1];
+    const required = _.last(indentation);
+    log.f.debug('Required indentation %bu', required);
+    return required;
   }
+
   function pushIndentation(indent) {
-    return indentation.push(indent);
+    indentation.push(indent);
+    log.f.debug('Pushed indentation %bu, length of stack %bu', indent, indentation.length);
   }
   function popIndetation() {
-    return indentation.pop();
+    const indent = indentation.pop();
+    log.f.debug('Popped indentation %bu, length of stack %bu', indent, indentation.length);
+    return indent;
   }
 
   function replenishArray(parent, children) {
     if (parent.name !== 'Array') {
+      log.f.log('Replinishing array ended at %bu', parent.key);
       return;
     }
 
-    const subType = parent.value[0];
+    const subType = parent.value[0]
     if (subType.name === 'Object') {
+      log.log('Subtype is an Object');
       if (children.length <= 0) {
-        throw new Error('Object should have children', location());
+        throw new Error(`Object [${subtype.key}] should have children`);
       }
+      log.log('Cloning children');
       parent.value.forEach(st => {
         children.forEach(({ key, type:child }) => {
           st.addChild(key, _.cloneDeep(child));
@@ -60,7 +67,7 @@ start=
     });
     config.read();
     const value = config.getValue();
-    log.debug(value);
+    log.success('Value mapped', value);
     return value;
   }
 
@@ -72,23 +79,24 @@ keyBasic=
   linebreakOptional indent:indent key:identifier spaceOptional ':'  spaceOptional type:typeWithArray ! {
     pushIndentation(indent + 2);
   } spaceOptional linebreakRequired children:child* {
-    log.f.success('Reading type=%b', type.name);
+    log.f.log('Reading type %bu at key %bu', type.name, key);
 
     if (type.name === 'Object') {
       if (children.length <= 0) {
-        throw new Error('Object should have children', location());
+        throw new Error(`Object [${key}] should have children`);
       }
 
+      log.log('Cloning children');
       children.forEach(({ key, type:child }) => {
         type.addChild(key, _.cloneDeep(child));
       });
     }
 
     if (type.name === 'Array') {
+      log.log('Cloning all children recursively');
       replenishArray(type, children);
     }
 
-    log.debug(type);
 
     popIndetation();
     return { key, type, indent };
@@ -96,13 +104,13 @@ keyBasic=
 
 child=
   found:keyVal & {
-    log.debug('Found a possible child', found);
+    log.f.log('Found a possible child %bu', found.key);
     const ri = requiredIndentation();
     if (found.indent !== ri) {
-      log.f.log('Found non-child with indentation %b and required %b', found.indent, ri);
+      log.f.log('Found non-child with indentation %bu and required %bu', found.indent, ri);
       return false;
     } else {
-      log.f.log('Found child with indentation %b and required %b', found.indent, ri);
+      log.f.log('Found child with indentation %bu and required %bu', found.indent, ri);
       return found;
     }
   } {
@@ -112,7 +120,7 @@ child=
 
 typeArray=
   'Array(' sec:typeWithArray ')' spaceOptional '{' length:length '}' {
-    log.f.log('Found %bu', 'Array');
+    log.f.log('Found type %bu and subtype %bu', 'Array', sec.name);
     const array = new types.ArrayType();
     for (let i = 0; i < length; i+= 1) {
       array.addChild(_.cloneDeep(sec));
@@ -122,24 +130,19 @@ typeArray=
 
 typeObject=
   'Object' {
-    log.f.log('Found %bu', 'Object');
+    log.f.log('Found type %bu', 'Object');
     return new types.ObjectType();
-  }
-
-anyExpectLineBreak=
-  c:[^\n.]* {
-    log.debug(c.join(''));
   }
 
 typeString=
 'String' {
-    log.f.log('Found %bu', 'String');
+    log.f.log('Found type %bu', 'String');
     return new types.StringType();
   }
 
 typeInteger=
   'Integer' {
-    log.f.log('Found %bu', 'Integer');
+    log.f.log('Found type %bu', 'Integer');
     return new types.IntegerType();
   }
 
@@ -151,25 +154,25 @@ typeWithArray=
 
 linebreakOptional=
   space:[\n]* {
-    // log.debug('Optional line break found');
+    log.debug('Optional line break found');
   }
 
 linebreakRequired=
   space:[\n]+ {
-    // log.debug('Required line break found');
+    log.debug('Required line break found');
   }
 
 identifier=
   first:[_a-zA-z] rest:([_0-9a-zA-z]*) {
     const id = first + rest.join('');
-    log.f.log('Found identifier=%b', id);
+    log.f.debug('Found identifier %bu', id);
     return id;
   }
 
 indent=
   spaces:[ ]* {
     const length = spaces.length;
-    // log.f.log('Found %b spaces', length);
+    log.f.debug('Found %bu spaces', length);
     currentIndent = length;
     return length;
   }
@@ -177,16 +180,16 @@ indent=
 length=
   digits:[0-9]+ {
     const length = parseInt(digits.join(''), 10);
-    log.f.log('Found length %b', length);
+    log.f.debug('Found array length %bu', length);
     return length;
   }
 
 spaceRequired=
   [ \t]+ {
-    // log.debug('Required space found');
+    log.debug('Required space found');
   }
 
 spaceOptional=
   [ \t]* {
-    // log.debug('Optional space found');
+    log.debug('Optional space found');
   }

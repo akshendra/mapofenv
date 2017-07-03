@@ -2,13 +2,13 @@
   "name": "mapenv",
   "version": "0.0.1",
   "description": "Read env variables and create js object from it",
-  "main": "src/mapenv.js",
+  "main": "index.js",
   "scripts": {
     "test": "npm test"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/akshendra/mapenv.git"
+    "url": "git+ssh://git@github.com/akshendra/mapofenv.git"
   },
   "keywords": [
     "env",
@@ -31,7 +31,7 @@
     "mocha": "^3.4.2"
   },
   "dependencies": {
-    "cimico": "0.0.2",
+    "cimico": "0.0.3",
     "debug": "^2.6.8",
     "is_js": "^0.9.0",
     "joi": "^10.6.0",
