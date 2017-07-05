@@ -4,7 +4,7 @@
 
 Mapping configuration environment variables into a js object or array. Given a string like
 
-```
+```bash
 db: Object
   host: String
   port: Integer
@@ -34,8 +34,8 @@ And produce an object as
 
 The structure of the file being
 
-```
-<key>:<type>{num}
+```bash
+<key>:<type>{num} [before => transformer => after]
 ```
 
 - `key` being the key in the mapped object and also determines the env variable used
@@ -46,6 +46,10 @@ The structure of the file being
   - `String` string
   - Other types to add
 - `{num}` is to specify the length of array
+- Validations and transformers (optional), to remove any part replace it with `_` (Eg `[_ => tranformer => _]`)
+  - `before`: regular expresssion or function to apply to the string read, if a function, should return a boolean
+  - `transfomer`: a function, to change the string into required value
+  - `after`: apply validation on the transformed value
 
 > For more examples look in [tests](./tests/peg.spec.js)
 
@@ -54,8 +58,8 @@ The structure of the file being
 - [x] Parse nested objects
 - [x] Parse arrays
 - [x] Parse nested arrays
-- [ ] Validator function in config
-- [ ] Support other types
+- [x] Validator function in config
+- [x] Support other types
 - [x] Logging
 - [ ] Error Handling
 - [ ] Test coverage
