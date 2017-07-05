@@ -61,5 +61,6 @@ The structure of the file being
 - [x] Validator function in config
 - [x] Support other types
 - [x] Logging
+- [ ] Add options and the main file
 - [ ] Error Handling
 - [ ] Test coverage
