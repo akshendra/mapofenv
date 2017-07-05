@@ -3,7 +3,7 @@
  * @Author: Akshendra Pratap Singh
  * @Date: 2017-06-27 23:29:25
  * @Last Modified by: Akshendra Pratap Singh
- * @Last Modified time: 2017-07-05 20:20:38
+ * @Last Modified time: 2017-07-05 22:54:57
  */
 
 const expect = require('chai').expect;
@@ -15,7 +15,7 @@ describe('Peg', () => {
     const string = `
 db: Object
   host: String
-  port: Integer
+  port: Number
 `;
 
     process.env.DB_HOST = '127.0.0.1';
@@ -30,15 +30,15 @@ db: Object
     });
   });
 
-  it.skip('parse multiple objects', () => {
+  it('parse multiple objects', () => {
     const string = `
 db: Object
   host: String
-  port: Integer
+  port: Number
 secret: String
 redis: Object
   host: String
-  port: Integer
+  port: Number
 `;
 
     process.env.DB_HOST = '127.0.0.1';
@@ -47,7 +47,7 @@ redis: Object
     process.env.REDIS_HOST = '127.0.0.2';
     process.env.REDIS_PORT = '1235';
 
-    const result = parser.parse(string);
+    const result = parser(string);
 
     expect(result).to.deep.equal({
       db: {
@@ -62,7 +62,7 @@ redis: Object
     });
   });
 
-  it.skip('should be able to parse double object', () => {
+  it('should be able to parse double object', () => {
     const string = `
 one: Object
   two: Object
@@ -73,7 +73,7 @@ one: Object
     process.env.ONE_TWO_THREE = 'three';
     process.env.ONE_TWO_FOUR = 'four';
 
-    const result = parser.parse(string);
+    const result = parser(string);
 
     expect(result).to.deep.equal({
       one: {
@@ -85,7 +85,7 @@ one: Object
     });
   });
 
-  it.skip('should be able to parse simple array', () => {
+  it('should be able to parse simple array', () => {
     const string = `
 names: Array(String){3}
 `;
@@ -94,28 +94,28 @@ names: Array(String){3}
     process.env['NAMES[1]'] = 'one';
     process.env['NAMES[2]'] = 'two';
 
-    const result = parser.parse(string);
+    const result = parser(string);
 
     expect(result).to.deep.equal({
       names: ['zero', 'one', 'two'],
     });
   });
 
-  it.skip('should be able to parse more arrays', () => {
+  it('should be able to parse more arrays', () => {
     const string = `
 names: Array(String){3}
-scores: Array(Integer){3}
+scores: Array(Number){3}
 `;
 
     process.env['NAMES[0]'] = 'zero';
     process.env['NAMES[1]'] = 'one';
     process.env['NAMES[2]'] = 'two';
 
-    process.env['SCORES[0]'] = 0;
-    process.env['SCORES[1]'] = 1;
-    process.env['SCORES[2]'] = 2;
+    process.env['SCORES[0]'] = '0';
+    process.env['SCORES[1]'] = '1';
+    process.env['SCORES[2]'] = '2';
 
-    const result = parser.parse(string);
+    const result = parser(string);
 
     expect(result).to.deep.equal({
       names: ['zero', 'one', 'two'],
@@ -123,20 +123,20 @@ scores: Array(Integer){3}
     });
   });
 
-  it.skip('should be able to parse array of objects', () => {
+  it('should be able to parse array of objects', () => {
     const string = `
 servers: Array(Object){2}
   host: String
-  port: Integer
+  port: Number
 `;
 
     process.env['SERVERS[0]_HOST'] = 'zero';
     process.env['SERVERS[1]_HOST'] = 'one';
 
-    process.env['SERVERS[0]_PORT'] = 0;
-    process.env['SERVERS[1]_PORT'] = 1;
+    process.env['SERVERS[0]_PORT'] = '0';
+    process.env['SERVERS[1]_PORT'] = '1';
 
-    const result = parser.parse(string);
+    const result = parser(string);
 
     expect(result).to.deep.equal({
       servers: [{
@@ -151,11 +151,11 @@ servers: Array(Object){2}
     });
   });
 
-  it.skip('should be able to parse nested arrays', () => {
+  it('should be able to parse nested arrays', () => {
     const string = `
 db: Array(Object){2}
   hosts: Array(String){2}
-  port: Integer
+  port: Number
 `;
 
     process.env['DB[0]_HOSTS[0]'] = '127.0.0.1';
@@ -166,7 +166,7 @@ db: Array(Object){2}
     process.env['DB[1]_HOSTS[1]'] = '127.0.1.2';
     process.env['DB[1]_PORT'] = '27011';
 
-    const result = parser.parse(string);
+    const result = parser(string);
 
     expect(result).to.deep.equal({
       db: [{
@@ -181,7 +181,7 @@ db: Array(Object){2}
     });
   });
 
-  it.skip('should be able to parse very deeply neseted arrays', () => {
+  it('should be able to parse very deeply neseted arrays', () => {
     const string = `
 db: Array(Object){2}
   servers: Array(Object){2}
@@ -198,7 +198,7 @@ db: Array(Object){2}
     process.env['DB[1]_SERVERS[1]_HOSTS[0]_HOST'] = '110';
     process.env['DB[1]_SERVERS[1]_HOSTS[1]_HOST'] = '111';
 
-    const result = parser.parse(string);
+    const result = parser(string);
     expect(result).to.deep.equal({
       db: [{
           servers: [{
@@ -246,10 +246,10 @@ db: Array(Object){2}
     });
   });
 
-  it.skip('should be able to parse a very comflex config', () => {
+  it('should be able to parse a very comflex config', () => {
     const string = `db:Object
   host:String
-  port:Integer
+  port:Number
   auth:Object
     username:String
     password:String
@@ -257,7 +257,7 @@ db: Array(Object){2}
     name:String
     servers:Array(Object){3}
       host:String
-      port:Integer
+      port:Number
 `;
 
     process.env.DB_HOST = '127.0.0.1';
@@ -268,13 +268,13 @@ db: Array(Object){2}
 
     process.env.DB_REPLICA_NAME = 'replication';
     process.env['DB_REPLICA_SERVERS[0]_HOST'] = 'host0';
-    process.env['DB_REPLICA_SERVERS[0]_PORT'] = 0;
+    process.env['DB_REPLICA_SERVERS[0]_PORT'] = '0';
     process.env['DB_REPLICA_SERVERS[1]_HOST'] = 'host1';
-    process.env['DB_REPLICA_SERVERS[1]_PORT'] = 1;
+    process.env['DB_REPLICA_SERVERS[1]_PORT'] = '1';
     process.env['DB_REPLICA_SERVERS[2]_HOST'] = 'host2';
-    process.env['DB_REPLICA_SERVERS[2]_PORT'] = 2;
+    process.env['DB_REPLICA_SERVERS[2]_PORT'] = '2';
 
-    const result = parser.parse(string);
+    const result = parser(string);
     expect(result).to.deep.equal({
       db: {
         host: '127.0.0.1',
@@ -303,17 +303,17 @@ db: Array(Object){2}
     });
   });
 
-  it.skip('should be able to parse array of array', () => {
+  it('should be able to parse array of array', () => {
     const string = `
-square: Array(Array(Integer){2}){2}
+square: Array(Array(Number){2}){2}
 `;
 
-    process.env['SQUARE[0][0]'] = 0;
-    process.env['SQUARE[0][1]'] = 1;
-    process.env['SQUARE[1][0]'] = 2;
-    process.env['SQUARE[1][1]'] = 3;
+    process.env['SQUARE[0][0]'] = '0';
+    process.env['SQUARE[0][1]'] = '1';
+    process.env['SQUARE[1][0]'] = '2';
+    process.env['SQUARE[1][1]'] = '3';
 
-    const result = parser.parse(string);
+    const result = parser(string);
 
     expect(result).to.deep.equal({
       square: [
@@ -323,22 +323,22 @@ square: Array(Array(Integer){2}){2}
     });
   });
 
-  it.skip('should be able to parser array of array of array', () => {
+  it('should be able to parser array of array of array', () => {
     const string = `
-cube: Array(Array(Array(Integer){2}){2}){2}
+cube: Array(Array(Array(Number){2}){2}){2}
 `;
 
-    process.env['CUBE[0][0][0]'] = 0;
-    process.env['CUBE[0][0][1]'] = 1;
-    process.env['CUBE[0][1][0]'] = 2;
-    process.env['CUBE[0][1][1]'] = 3;
+    process.env['CUBE[0][0][0]'] = '0';
+    process.env['CUBE[0][0][1]'] = '1';
+    process.env['CUBE[0][1][0]'] = '2';
+    process.env['CUBE[0][1][1]'] = '3';
 
-    process.env['CUBE[1][0][0]'] = 4;
-    process.env['CUBE[1][0][1]'] = 5;
-    process.env['CUBE[1][1][0]'] = 6;
-    process.env['CUBE[1][1][1]'] = 7;
+    process.env['CUBE[1][0][0]'] = '4';
+    process.env['CUBE[1][0][1]'] = '5';
+    process.env['CUBE[1][1][0]'] = '6';
+    process.env['CUBE[1][1][1]'] = '7';
 
-    const result = parser.parse(string);
+    const result = parser(string);
 
     expect(result).to.deep.equal({
       cube: [
@@ -354,12 +354,12 @@ cube: Array(Array(Array(Integer){2}){2}){2}
     });
   });
 
-  it.skip('should be able to parse objects inside array or array', () => {
+  it('should be able to parse objects inside array or array', () => {
     const string = `
 triangles: Array(Array(Object){2}){2}
-  x: Integer
-  y: Integer
-  z: Integer
+  x: Number
+  y: Number
+  z: Number
 `;
 
     process.env['TRIANGLES[0][0]_X'] = 1;
@@ -378,7 +378,7 @@ triangles: Array(Array(Object){2}){2}
     process.env['TRIANGLES[1][1]_Y'] = 11;
     process.env['TRIANGLES[1][1]_Z'] = 12;
 
-    const result = parser.parse(string);
+    const result = parser(string);
 
     expect(result).to.deep.equal({
       triangles: [

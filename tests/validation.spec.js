@@ -4,7 +4,7 @@
  * @Author: Akshendra Pratap Singh
  * @Date: 2017-07-04 01:58:28
  * @Last Modified by: Akshendra Pratap Singh
- * @Last Modified time: 2017-07-05 22:39:51
+ * @Last Modified time: 2017-07-05 22:57:46
  */
 
 const expect = require('chai').expect;
@@ -23,7 +23,7 @@ auth: Object
 `;
 
     process.env.DB_HOST = '127.0.0.1';
-    process.env.DB_PORT = '1234.44';
+    process.env.DB_PORT = '1234';
     process.env.AUTH_USERNAME = 'akshendra';
     process.env.AUTH_PASSWORD = 'wonderful';
 

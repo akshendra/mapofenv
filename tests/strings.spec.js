@@ -3,34 +3,14 @@
  * @Author: Akshendra Pratap Singh
  * @Date: 2017-06-19 00:30:29
  * @Last Modified by: Akshendra Pratap Singh
- * @Last Modified time: 2017-06-20 01:00:35
+ * @Last Modified time: 2017-07-05 22:57:34
  */
 
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
 const expect = require('chai').expect;
-const strings = require('../src/strings');
-
-describe('lines', () => {
-  it('should split a string into lines', () => {
-    const string = `
-1. Line one
-2. Line two
-3. Line tree
-    `;
-    const lines = strings.lines(string);
-    expect(lines).to.have.length(3);
-  });
-
-  it('should split a string from file into lines', async () => {
-    const data = await util.promisify(fs.readFile)(
-      path.join(__dirname, 'data/lines'),
-    );
-    const lines = strings.lines(data.toString());
-    expect(lines).to.have.length(3);
-  });
-});
+const strings = require('../lib/strings');
 
 describe('transformCamelCase', () => {
   it('should transform "myAwesomeKey" into "MY_AWESOME_KEY"', () => {
@@ -64,14 +44,21 @@ describe('transformKey', () => {
   it('should transfrom "myAwesomeKey" into "MY_AWESOME_KEY"', () => {
     const str = 'myAwesomeKey';
     const result = strings.transformKey(str, {
-      key: { case: 'camel', delimiter: '_' },
+      key: {
+        case: 'camel',
+        delimiter: '_',
+      },
     });
     expect(result).to.equal('MY_AWESOME_KEY');
   });
 
   it('should transfrom "MyAwesomeKey" into "MY_AWESOME_KEY', () => {
     const str = 'MyAwesomeKey';
-    const result = strings.transformKey(str, { key: { case: 'camel' } });
+    const result = strings.transformKey(str, {
+      key: {
+        case: 'camel',
+      },
+    });
     expect(result).to.equal('MY_AWESOME_KEY');
   });
 
