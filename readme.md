@@ -54,7 +54,7 @@ The structure of the file being
 - [x] Parse nested objects
 - [x] Parse arrays
 - [x] Parse nested arrays
-- [ ] Regex validation in config
+- [ ] Validator function in config
 - [ ] Support other types
 - [x] Logging
 - [ ] Error Handling

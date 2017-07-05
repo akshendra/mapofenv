@@ -4,7 +4,8 @@
   "description": "Read env variables and create js object from it",
   "main": "index.js",
   "scripts": {
-    "test": "npm test"
+    "test": "npm test",
+    "grammar": "pegjs -o ./lib/parser.js grammar.peg"
   },
   "repository": {
     "type": "git",
