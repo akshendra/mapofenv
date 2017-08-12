@@ -1,0 +1,68 @@
+{
+  "name": "mapofenv",
+  "version": "0.0.4",
+  "description": "Map your env variables into js objects smartly",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha index.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akshendra/mapofenv.git"
+  },
+  "keywords": [
+    "env",
+    "js",
+    "map",
+    "node",
+    "config",
+    "configurations"
+  ],
+  "author": "Akshendra Pratap Singh <akshendra@zoho.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/akshendra/mapofenv/issues"
+  },
+  "homepage": "https://github.com/akshendra/mapofenv#readme",
+  "devDependencies": {
+    "chai": "^4.1.1",
+    "mocha": "^3.5.0",
+    "xo": "^0.18.2"
+  },
+  "xo": {
+    "env": [
+      "node",
+      "mocha"
+    ],
+    "space": 2,
+    "rules": {
+      "no-unused-expressions": 0,
+      "comma-dangle": [
+        "error",
+        {
+          "arrays": "always-multiline",
+          "objects": "always-multiline",
+          "imports": "never",
+          "exports": "never",
+          "functions": "never"
+        }
+      ],
+      "func-names": 0,
+      "max-params": 0,
+      "object-curly-spacing": 0,
+      "new-cap": 0,
+      "prefer-arrow-callback": 0,
+      "camelcase": [
+        "error",
+        {
+          "properties": "never"
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "is_js": "^0.9.0",
+    "ramda": "^0.24.1",
+    "ramda-fantasy": "^0.8.0"
+  }
+}
