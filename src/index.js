@@ -1,6 +1,13 @@
 
 const { isArray, isFunction, isObject } = require('./is');
 
+function json(val) {
+  try {
+    return JSON.parse(val);
+  } catch(ex) { // eslint-disable-line
+    return val;
+  }
+}
 
 function convertKey(prefix, key) {
   if (key === '') {
@@ -11,7 +18,7 @@ function convertKey(prefix, key) {
 
 function _parse(prefix, val) {
   if (isFunction(val)) {
-    return val(process.env[prefix]);
+    return val(json(process.env[prefix]));
   }
 
   if (isArray(val)) {

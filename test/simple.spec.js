@@ -7,7 +7,6 @@ const mapping = {
     projectId: String,
   },
   use: Boolean,
-  es: [String, String, String],
   redis: {
     cluster: {
       use: Boolean,
@@ -32,7 +31,7 @@ const mapping = {
 
 Object.assign(process.env, {
   MOE_GOOGLE_PROJECT_ID: 'quizizz-org',
-  MOE_USE: 'true',
+  MOE_USE: 'false',
   MOE_MONGO_HOST: '127.0.0.1',
   MOE_MONGO_PORT: '27017',
   MOE_MONGO_DB: 'quizizz',
@@ -53,7 +52,7 @@ describe('Mapping', () => {
       google: {
         projectId: 'quizizz-org',
       },
-      use: true,
+      use: false,
       redis: {
         cluster: {
           use: true,
