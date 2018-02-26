@@ -36,6 +36,31 @@ function _parse(prefix, val) {
   return val;
 }
 
+function _produce(prefix, key, val) {
+  if (isArray(val)) {
+    let str = '';
+    val.forEach((v, index) => {
+      str += _produce(`${convertKey(prefix, key)}[${index}]`, '', v, str);
+    });
+    return str;
+  }
+
+  if (isObject(val)) {
+    let str = '';
+    Object.keys(val).forEach((k) => {
+      str += _produce(convertKey(prefix, key), k, val[k], str);
+    });
+    return str;
+  }
+
+  return `${convertKey(prefix, key)}=${val}\n`;
+}
+
 exports.parse = function parse(mapping, options = {}) {
   return _parse(convertKey(options.prefix, ''), mapping);
+};
+
+
+exports.produce = function produce(config, options = {}) {
+  return _produce(options.prefix, '', config, '');
 };
