@@ -27,6 +27,10 @@ const mapping = {
       readPreference: String,
     },
   },
+  un: {
+    host: String,
+    port: Number,
+  },
 };
 
 Object.assign(process.env, {
@@ -72,6 +76,10 @@ describe('Mapping', () => {
         options: {
           readPreference: 'secondary',
         },
+      },
+      un: {
+        host: '',
+        port: 0,
       },
     });
   });

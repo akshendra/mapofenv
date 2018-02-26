@@ -5,7 +5,7 @@ function json(val) {
   try {
     return JSON.parse(val);
   } catch(ex) { // eslint-disable-line
-    return val;
+    return val || '';
   }
 }
 
@@ -18,7 +18,8 @@ function convertKey(prefix, key) {
 
 function _parse(prefix, val) {
   if (isFunction(val)) {
-    return val(json(process.env[prefix]));
+    const value = json(process.env[prefix]);
+    return val(value);
   }
 
   if (isArray(val)) {
