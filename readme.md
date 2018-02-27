@@ -8,7 +8,7 @@ Object.assign(process.env, {
   MOE_USE: 'false',
   MOE_MONGO_HOST: '127.0.0.1',
   MOE_MONGO_PORT: '27017',
-  MOE_MONGO_DB: 'quizizz',
+  MOE_MONGO_DB: 'somedb',
   MOE_MONGO_OPTIONS_READ_PREFERENCE: 'secondary',
   MOE_REDIS_CLUSTER_USE: 'true',
   'MOE_REDIS_CLUSTER_HOSTS[0]_HOST': '127.0.0.1',
@@ -84,7 +84,7 @@ Result
   mongo: {
     host: '127.0.0.1',
     port: 27017,
-    db: 'quizizz',
+    db: 'somedb',
     options: {
       readPreference: 'secondary',
     },
