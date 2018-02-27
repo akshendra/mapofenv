@@ -20,9 +20,22 @@ function convertKey(prefix, key) {
   return `${prefix}_${key.split(/(?=[A-Z])/g).map(a => a.toUpperCase()).join('_')}`;
 }
 
+function getPreferredValue(prefixes) {
+  let value;
+  for (let i = 0; i < prefixes.length; i += 1) {
+    const prefix = prefixes[i];
+    value = json(process.env[prefix]);
+    if (value !== undefined) {
+      break;
+    }
+  }
+
+  return value;
+}
+
 function _parse(prefix, val) {
   if (isFunction(val)) {
-    const value = json(process.env[prefix]);
+    const value = getPreferredValue(prefix);
     const transformed = val(value);
     if (transformed === undefined || Number.isNaN(transformed)) {
       return null;
@@ -31,13 +44,14 @@ function _parse(prefix, val) {
   }
 
   if (isArray(val)) {
-    return val.map((v, index) => _parse(`${prefix}[${index}]`, v));
+    return val.map((v, index) => _parse(prefix.map(p => `${p}[${index}]`), v));
   }
 
   if (isObject(val)) {
     return Object.keys(val).reduce((config, key) => {
+      const prefixes = prefix.map(p => convertKey(p, key));
       return Object.assign({}, config, {
-        [key]: _parse(convertKey(prefix, key), val[key]),
+        [key]: _parse(prefixes, val[key]),
       });
     }, {});
   }
@@ -66,7 +80,10 @@ function _produce(prefix, key, val) {
 }
 
 exports.parse = function parse(mapping, options = {}) {
-  return _parse(convertKey(options.prefix, ''), mapping);
+  if (isArray(options.prefix)) {
+    return _parse(options.prefix.map(prefix => convertKey(prefix, '')), mapping);
+  }
+  return _parse([convertKey(options.prefix, '')], mapping);
 };
 
 
