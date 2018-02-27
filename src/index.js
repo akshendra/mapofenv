@@ -1,11 +1,15 @@
 
 const { isArray, isFunction, isObject } = require('./is');
+const types = require('./types');
 
 function json(val) {
   try {
-    return JSON.parse(val);
+    if (val !== undefined) {
+      return JSON.parse(val);
+    }
+    return undefined;
   } catch(ex) { // eslint-disable-line
-    return val || '';
+    return val;
   }
 }
 
@@ -19,7 +23,11 @@ function convertKey(prefix, key) {
 function _parse(prefix, val) {
   if (isFunction(val)) {
     const value = json(process.env[prefix]);
-    return val(value);
+    const transformed = val(value);
+    if (transformed === undefined || Number.isNaN(transformed)) {
+      return null;
+    }
+    return transformed;
   }
 
   if (isArray(val)) {
@@ -65,3 +73,5 @@ exports.parse = function parse(mapping, options = {}) {
 exports.produce = function produce(config, options = {}) {
   return _produce(options.prefix, '', config, '');
 };
+
+exports.types = types;

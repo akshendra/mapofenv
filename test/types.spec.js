@@ -1,36 +1,41 @@
 
 const { expect } = require('chai');
-const { parse } = require('../src/index.js');
+const { parse, types } = require('../src/index.js');
+const { string, boolean, array, number } = types;
 
 const mapping = {
   google: {
-    projectId: String,
+    projectId: string(),
   },
-  use: Boolean,
+  use: boolean(),
   redis: {
     cluster: {
-      use: Boolean,
-      hosts: [{
-        host: String,
-        port: Number,
-      }, {
-        host: String,
-        port: Number,
-      }],
+      use: boolean(),
+      hosts: array(2, {
+        host: string(),
+        port: number(),
+      }),
     },
   },
   mongo: {
-    host: String,
-    port: Number,
-    db: String,
+    host: string(),
+    port: number(),
+    db: string(),
     options: {
-      readPreference: String,
+      readPreference: string(),
     },
   },
   un: {
-    host: String,
-    port: Number,
+    host: string(),
+    port: number(),
   },
+  darray: array(2, {
+    dvalue: number(20),
+    svalue: string(),
+  }, [{
+    dvalue: 22,
+    svalue: 'one',
+  }])
 };
 
 Object.assign(process.env, {
@@ -42,13 +47,14 @@ Object.assign(process.env, {
   MOE_MONGO_OPTIONS_READ_PREFERENCE: 'secondary',
   MOE_REDIS_CLUSTER_USE: 'true',
   'MOE_REDIS_CLUSTER_HOSTS[0]_HOST': '127.0.0.1',
-  'MOE_REDIS_CLUSTER_HOSTS[0]_PORT': 6371,
+  'MOE_REDIS_CLUSTER_HOSTS[0]_PORT': '6371',
   'MOE_REDIS_CLUSTER_HOSTS[1]_HOST': '127.0.0.2',
-  'MOE_REDIS_CLUSTER_HOSTS[1]_PORT': 6372,
+  'MOE_REDIS_CLUSTER_HOSTS[1]_PORT': '6372',
+  'MOE_DARRAY[1]_DVALUE': '21',
 });
 
-describe('Mapping', () => {
-  it('should parse simple mapping', () => {
+describe('Types', () => {
+  it('Will use default values', () => {
     const config = parse(mapping, {
       prefix: 'MOE',
     });
@@ -78,9 +84,16 @@ describe('Mapping', () => {
         },
       },
       un: {
-        host: 'undefined',
+        host: null,
         port: null,
       },
+      darray: [{
+        dvalue: 22,
+        svalue: 'one',
+      }, {
+        dvalue: 21,
+        svalue: null,
+      }],
     });
   });
 });
