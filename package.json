@@ -1,6 +1,6 @@
 {
   "name": "mapofenv",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Read env variables and create js object from it",
   "main": "src/index.js",
   "scripts": {
