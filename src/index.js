@@ -29,7 +29,6 @@ function getPreferredValue(prefixes) {
       break;
     }
   }
-
   return value;
 }
 
@@ -80,10 +79,18 @@ function _produce(prefix, key, val) {
 }
 
 exports.parse = function parse(mapping, options = {}) {
+  let config = {};
   if (isArray(options.prefix)) {
-    return _parse(options.prefix.map(prefix => convertKey(prefix, '')), mapping);
+    config = _parse(options.prefix.map(prefix => convertKey(prefix, '')), mapping);
+  } else {
+    config = _parse([convertKey(options.prefix, '')], mapping);
   }
-  return _parse([convertKey(options.prefix, '')], mapping);
+  config.get = (function get(keys) {
+    return keys.split('.').reduce((data, key) => {
+      return data === undefined ? null : data[key];
+    }, this);
+  }).bind(config);
+  return config;
 };
 
 

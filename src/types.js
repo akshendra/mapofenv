@@ -46,6 +46,9 @@ function defaulter(item, def) {
 
 exports.array = function array(length, itemType, def = []) {
   return Array(length).fill(itemType).map((item, index) => {
-    return defaulter(item, def[index]);
+    if (def[index]) {
+      return defaulter(item, def[index]);  
+    }
+    return item;
   });
 };

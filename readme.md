@@ -9,7 +9,7 @@ Object.assign(process.env, {
   MOE_MONGO_HOST: '127.0.0.1',
   MOE_MONGO_PORT: '27017',
   MOE_MONGO_DB: 'somedb',
-  MOE_MONGO_OPTIONS_READ_PREFERENCE: 'secondary',
+  BOE_MONGO_OPTIONS_READ_PREFERENCE: 'secondary',
   MOE_REDIS_CLUSTER_USE: 'true',
   'MOE_REDIS_CLUSTER_HOSTS[0]_HOST': '127.0.0.1',
   'MOE_REDIS_CLUSTER_HOSTS[0]_PORT': '6371',
@@ -40,7 +40,7 @@ const mapping = {
     port: number(),
     db: string(),
     options: {
-      readPreference: string(),
+      readPreference: string('primary'),
     },
   },
   un: {
@@ -60,7 +60,7 @@ const mapping = {
 Mapped Config
 ```js
 const config = parse(mapping, {
-  prefix: 'MOE',
+  prefix: ['BOE', 'MOE'], // first one wins if none found then null is set
 });
 ```
 
