@@ -38,27 +38,28 @@ const mapping = {
   }])
 };
 
-Object.assign(process.env, {
-  MOE_GOOGLE_PROJECT_ID: 'quizizz-org',
-  MOE_USE: 'false',
-  MOE_MONGO_HOST: '127.0.0.1',
-  MOE_MONGO_PORT: '27017',
-  MOE_MONGO_DB: 'quizizz',
-  MOE_MONGO_OPTIONS_READ_PREFERENCE: 'secondary',
-  MOE_REDIS_CLUSTER_USE: 'true',
-  'MOE_REDIS_CLUSTER_HOSTS[0]_HOST': '127.0.0.1',
-  'MOE_REDIS_CLUSTER_HOSTS[0]_PORT': '6371',
-  'MOE_REDIS_CLUSTER_HOSTS[1]_HOST': '127.0.0.2',
-  'MOE_REDIS_CLUSTER_HOSTS[1]_PORT': '6372',
-  'MOE_DARRAY[1]_DVALUE': '21',
-});
-
 describe('Types', () => {
   it('Will use default values', () => {
+    Object.assign(process.env, {
+      MOE_GOOGLE_PROJECT_ID: 'quizizz-org',
+      MOE_USE: 'false',
+      MOE_MONGO_HOST: '127.0.0.1',
+      MOE_MONGO_PORT: '27017',
+      MOE_MONGO_DB: 'quizizz',
+      MOE_MONGO_OPTIONS_READ_PREFERENCE: 'secondary',
+      MOE_REDIS_CLUSTER_USE: 'true',
+      'MOE_REDIS_CLUSTER_HOSTS_0_HOST': '127.0.0.9',
+      'MOE_REDIS_CLUSTER_HOSTS_0_PORT': '6371',
+      'MOE_REDIS_CLUSTER_HOSTS_1_HOST': '127.0.0.10',
+      'MOE_REDIS_CLUSTER_HOSTS_1_PORT': '6372',
+      'MOE_DARRAY_1_DVALUE': '21',
+    });
+
     const config = parse(mapping, {
       prefix: 'MOE',
     });
-    expect(config).to.deep.equal({
+    config.get = undefined;
+    expect(JSON.parse(JSON.stringify(config))).to.deep.equal({
       google: {
         projectId: 'quizizz-org',
       },
@@ -67,10 +68,10 @@ describe('Types', () => {
         cluster: {
           use: true,
           hosts: [{
-            host: '127.0.0.1',
+            host: '127.0.0.9',
             port: 6371,
           }, {
-            host: '127.0.0.2',
+            host: '127.0.0.10',
             port: 6372,
           }],
         },

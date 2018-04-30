@@ -43,7 +43,7 @@ function _parse(prefix, val) {
   }
 
   if (isArray(val)) {
-    return val.map((v, index) => _parse(prefix.map(p => `${p}[${index}]`), v));
+    return val.map((v, index) => _parse(prefix.map(p => `${p}_${index}`), v));
   }
 
   if (isObject(val)) {
