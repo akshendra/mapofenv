@@ -11,7 +11,7 @@ Object.assign(process.env, {
   MOE_MONGO_DB: 'somedb',
   BOE_MONGO_OPTIONS_READ_PREFERENCE: 'secondary',
   MOE_REDIS_CLUSTER_USE: 'true',
-  'MOE_REDIS_CLUSTER_HOSTS_0_HOST': '127.0.0.1', // changes from [0] to _0_ in 0.0.8
+  'MOE_REDIS_CLUSTER_HOSTS_0_HOST': '127.0.0.1', // changed from [0] to _0_ in 0.0.8
   'MOE_REDIS_CLUSTER_HOSTS_0_PORT': '6371',
   'MOE_REDIS_CLUSTER_HOSTS_1_HOST': '127.0.0.2',
   'MOE_REDIS_CLUSTER_HOSTS_1_PORT': '6372',
