@@ -1,7 +1,7 @@
 
 const { expect } = require('chai');
 const { parse, types } = require('../src/index.js');
-const { string, boolean, array, number } = types;
+const { string, boolean, array, number, json } = types;
 
 const mapping = {
   google: {
@@ -35,7 +35,8 @@ const mapping = {
   }, [{
     dvalue: 22,
     svalue: 'one',
-  }])
+  }]),
+  json: json(),
 };
 
 describe('Types', () => {
@@ -53,6 +54,7 @@ describe('Types', () => {
       'MOE_REDIS_CLUSTER_HOSTS_1_HOST': '127.0.0.10',
       'MOE_REDIS_CLUSTER_HOSTS_1_PORT': '6372',
       'MOE_DARRAY_1_DVALUE': '21',
+      'MOE_JSON': '{"good": "boi"}',
     });
 
     const config = parse(mapping, {
@@ -95,6 +97,7 @@ describe('Types', () => {
         dvalue: 21,
         svalue: null,
       }],
+      json: { good: 'boi' },
     });
   });
 });
