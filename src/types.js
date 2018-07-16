@@ -18,7 +18,7 @@ function make(fx, defaultValue) {
 exports.string = make(String);
 exports.number = make(Number);
 exports.boolean = make(Boolean);
-exports.json = () => (v) => v;
+exports.json = (def) => (v) => v || def;
 
 function defaultIt(fx, defaultValue) {
   return (found) => {

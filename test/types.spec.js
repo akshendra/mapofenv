@@ -37,6 +37,9 @@ const mapping = {
     svalue: 'one',
   }]),
   json: json(),
+  jsondef: json([
+    1, 2, 3
+  ]),
 };
 
 describe('Types', () => {
@@ -98,6 +101,7 @@ describe('Types', () => {
         svalue: null,
       }],
       json: { good: 'boi' },
+      jsondef: [1, 2, 3],
     });
   });
 });
